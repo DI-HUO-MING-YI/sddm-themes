@@ -29,7 +29,6 @@ import QtMultimedia 5.8
 import QtGraphicalEffects 1.0
 import SddmComponents 2.0
 import "Components"
-import "logic.js" as Logic
 
 Pane {
     id: root
@@ -71,6 +70,23 @@ Pane {
                                config.FormPosition == "right" &&
                                config.BackgroundImageHAlignment == "center"
 
+    // 读取背景图路径
+    property string cfgBackground: config.Background
+
+    // 判断背景类型
+    // property string backgroundType: parseBackgroundType(cfgBackground)
+    // property bool isImage: backgroundType === "image"
+    // property bool isVideo: backgroundType === "video"
+    property bool isImage: false
+    property bool isVideo: true
+
+    // 背景类型解析函数
+    // function parseBackgroundType(img) {
+    //     var vidFormats = ["avi", "mp4", "mov", "mkv", "m4v", "webm"]
+    //     var fileExt = img.split('.').pop().toLowerCase()
+    //     
+    //     return vidFormats.indexOf(fileExt) >= 0 ? "video" : "image"
+    // }
     Item {
         id: sizeHelper
 
@@ -78,24 +94,59 @@ Pane {
         height: parent.height
         width: parent.width
 
-        Rectangle {
-            id: tintLayer
+        // Rectangle {
+        //     id: tintLayer
+        //     anchors.fill: parent
+        //     width: parent.width
+        //     height: parent.height
+        //     color: "black"
+        //     opacity: config.DimBackgroundImage
+        //     z: 1
+        // }
+
+        // Rectangle {
+        //     id: formBackground
+        //     anchors.fill: form
+        //     anchors.centerIn: form
+        //     color: root.palette.window
+        //     visible: config.HaveFormBackground == "true" ? true : false
+        //     opacity: config.PartialBlur == "true" ? 0.3 : 1
+        //     z: 1
+        // }
+        Background {
+            id: mainFrameBackgroundImage
             anchors.fill: parent
-            width: parent.width
-            height: parent.height
-            color: "black"
-            opacity: config.DimBackgroundImage
-            z: 1
+            source: isImage ? cfgBackground : ""
+            visible: isImage
         }
 
         Rectangle {
-            id: formBackground
-            anchors.fill: form
-            anchors.centerIn: form
-            color: root.palette.window
-            visible: config.HaveFormBackground == "true" ? true : false
-            opacity: config.PartialBlur == "true" ? 0.3 : 1
-            z: 1
+            id: mainFrameBackgroundVideo
+            anchors.fill: parent
+            visible: isVideo
+            color: "#1c1c1c"
+            MediaPlayer {
+                id: previewPlayer
+                source: cfgBackground
+                onPositionChanged: { previewPlayer.pause() }
+            }
+            VideoOutput {
+                anchors.fill: parent
+                source: previewPlayer
+                fillMode: VideoOutput.PreserveAspectCrop
+            }
+            MediaPlayer {
+                id: videoPlayer
+                source: cfgBackground
+                autoPlay: true
+                loops: MediaPlayer.Infinite
+            }
+            VideoOutput {
+                id: videoOutput
+                source: videoPlayer
+                fillMode: VideoOutput.PreserveAspectCrop
+                anchors.fill: parent
+            }
         }
 
         LoginForm {
@@ -213,41 +264,7 @@ Pane {
                 }
             ]
         }
-        Background {
-            id: mainFrameBackgroundImage
-            anchors.fill: parent
-            source: Logic.isImage ? Logic.cfgBackground : ""
-            visible: Logic.isImage
-        }
-        // Video background
-        Rectangle {
-            id: mainFrameBackgroundVideo
-            anchors.fill: parent
-            visible: Logic.isVideo
-            color: "#111"
-            MediaPlayer {
-                id: previewPlayer
-                source: Logic.cfgBackground
-                onPositionChanged: { previewPlayer.pause() }
-            }
-            VideoOutput {
-                anchors.fill: parent
-                source: previewPlayer
-                fillMode: VideoOutput.PreserveAspectCrop
-            }
-            MediaPlayer {
-                id: videoPlayer
-                source: Logic.cfgBackground
-                autoPlay: true
-                loops: MediaPlayer.Infinite
-            }
-            VideoOutput {
-                id: videoOutput
-                source: videoPlayer
-                fillMode: VideoOutput.PreserveAspectCrop
-                anchors.fill: parent
-            }
-        }
+        // 使用背景图或背景视频
         // Image {
         //     id: backgroundImage
         //
@@ -280,32 +297,32 @@ Pane {
         // }
 
         MouseArea {
-            anchors.fill: backgroundImage
+            anchors.fill: mainFrameBackgroundVideo
             onClicked: parent.forceActiveFocus()
         }
 
-        ShaderEffectSource {
-            id: blurMask
-
-            sourceItem: backgroundImage
-            width: form.width
-            height: parent.height
-            anchors.centerIn: form
-            sourceRect: Qt.rect(x,y,width,height)
-            visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
-        }
-
-        GaussianBlur {
-            id: blur
-
-            height: parent.height
-            width: config.FullBlur == "true" ? parent.width : form.width
-            source: config.FullBlur == "true" ? backgroundImage : blurMask
-            radius: config.BlurRadius
-            samples: config.BlurRadius * 2 + 1
-            cached: true
-            anchors.centerIn: config.FullBlur == "true" ? parent : form
-            visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
-        }
+        // ShaderEffectSource {
+        //     id: blurMask
+        //
+        //     sourceItem: mainFrameBackgroundVideo
+        //     width: form.width
+        //     height: parent.height
+        //     anchors.centerIn: form
+        //     sourceRect: Qt.rect(x,y,width,height)
+        //     visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
+        // }
+        //
+        // GaussianBlur {
+        //     id: blur
+        //
+        //     height: parent.height
+        //     width: config.FullBlur == "true" ? parent.width : form.width
+        //     source: config.FullBlur == "true" ? mainFrameBackgroundVideo : blurMask
+        //     radius: config.BlurRadius
+        //     samples: config.BlurRadius * 2 + 1
+        //     cached: true
+        //     anchors.centerIn: config.FullBlur == "true" ? parent : form
+        //     visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
+        // }
     }
 }
