@@ -94,25 +94,25 @@ Pane {
         height: parent.height
         width: parent.width
 
-        // Rectangle {
-        //     id: tintLayer
-        //     anchors.fill: parent
-        //     width: parent.width
-        //     height: parent.height
-        //     color: "black"
-        //     opacity: config.DimBackgroundImage
-        //     z: 1
-        // }
+        Rectangle {
+            id: tintLayer
+            anchors.fill: parent
+            width: parent.width
+            height: parent.height
+            color: "black"
+            opacity: config.DimBackgroundImage
+            z: 1
+        }
 
-        // Rectangle {
-        //     id: formBackground
-        //     anchors.fill: form
-        //     anchors.centerIn: form
-        //     color: root.palette.window
-        //     visible: config.HaveFormBackground == "true" ? true : false
-        //     opacity: config.PartialBlur == "true" ? 0.3 : 1
-        //     z: 1
-        // }
+        Rectangle {
+            id: formBackground
+            anchors.fill: form
+            anchors.centerIn: form
+            color: root.palette.window
+            visible: config.HaveFormBackground == "true" ? true : false
+            opacity: config.PartialBlur == "true" ? 0.3 : 1
+            z: 1
+        }
         Background {
             id: mainFrameBackgroundImage
             anchors.fill: parent
@@ -124,7 +124,7 @@ Pane {
             id: mainFrameBackgroundVideo
             anchors.fill: parent
             visible: isVideo
-            color: "#1c1c1c"
+            color: "black"
             MediaPlayer {
                 id: previewPlayer
                 source: cfgBackground
@@ -147,6 +147,27 @@ Pane {
                 fillMode: VideoOutput.PreserveAspectCrop
                 anchors.fill: parent
             }
+            // // 加载遮罩层
+            // Rectangle {
+            //     id: loadingMask
+            //     anchors.fill: parent
+            //     color: "black"
+            //     opacity: 1  // 初始为完全可见
+            //     z: 10  // 确保遮罩层在上层
+            // }
+            //
+            // // 定时器
+            // Timer {
+            //     id: loadingTimer
+            //     interval: 1000  // 设置遮罩显示时间（毫秒）
+            //     running: false  // 初始为不运行
+            //     repeat: false   // 不重复
+            //     onTriggered: {
+            //         loadingMask.opacity = 0;  // 隐藏遮罩
+            //         loadingMask.visible = false
+            //         loadingTimer.stop();       // 停止定时器
+            //     }
+            // }
         }
 
         LoginForm {
@@ -301,28 +322,28 @@ Pane {
             onClicked: parent.forceActiveFocus()
         }
 
-        // ShaderEffectSource {
-        //     id: blurMask
-        //
-        //     sourceItem: mainFrameBackgroundVideo
-        //     width: form.width
-        //     height: parent.height
-        //     anchors.centerIn: form
-        //     sourceRect: Qt.rect(x,y,width,height)
-        //     visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
-        // }
-        //
-        // GaussianBlur {
-        //     id: blur
-        //
-        //     height: parent.height
-        //     width: config.FullBlur == "true" ? parent.width : form.width
-        //     source: config.FullBlur == "true" ? mainFrameBackgroundVideo : blurMask
-        //     radius: config.BlurRadius
-        //     samples: config.BlurRadius * 2 + 1
-        //     cached: true
-        //     anchors.centerIn: config.FullBlur == "true" ? parent : form
-        //     visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
-        // }
+        ShaderEffectSource {
+            id: blurMask
+
+            sourceItem: mainFrameBackgroundVideo
+            width: form.width
+            height: parent.height
+            anchors.centerIn: form
+            sourceRect: Qt.rect(x,y,width,height)
+            visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
+        }
+
+        GaussianBlur {
+            id: blur
+
+            height: parent.height
+            width: config.FullBlur == "true" ? parent.width : form.width
+            source: config.FullBlur == "true" ? mainFrameBackgroundVideo : blurMask
+            radius: config.BlurRadius
+            samples: config.BlurRadius * 2 + 1
+            cached: true
+            anchors.centerIn: config.FullBlur == "true" ? parent : form
+            visible: config.FullBlur == "true" || config.PartialBlur == "true" ? true : false
+        }
     }
 }
