@@ -40,6 +40,7 @@ Column {
         height: root.font.pointSize * 4.5
         width: parent.width / 2
         anchors.horizontalCenter: parent.horizontalCenter
+        visible: false
 
         ComboBox {
 
@@ -245,9 +246,24 @@ Column {
                 border.color: root.palette.text
                 border.width: parent.activeFocus ? 2 : 1
                 radius: config.RoundCorners || 0
-            }
-            onAccepted: loginButton.clicked()
+            } 
+            // onAccepted: loginButton.clicked()
+            onAccepted: sddm.login(username.text.toLowerCase(), password.text, sessionSelect.selectedSession)
             KeyNavigation.down: revealSecret
+            
+            onTextChanged: {
+                input.visible = password.text.length > 0; // 输入时显示
+                blur.visible = password.text.length > 0;
+            }
+
+            
+            Keys.onPressed: {
+                if (event.key === Qt.Key_Escape) {
+                    password.text = ""
+                    input.visible = false
+                    blur.visible = false
+                }
+            }
         }
 
         states: [
@@ -256,11 +272,11 @@ Column {
                 when: password.activeFocus
                 PropertyChanges {
                     target: password.background
-                    border.color: root.palette.highlight
+                    // border.color: root.palette.highlight
                 }
                 PropertyChanges {
                     target: password
-                    color: root.palette.highlight
+                    // color: root.palette.highlight
                 }
             }
         ]
@@ -277,7 +293,8 @@ Column {
 
     Item {
         id: secretCheckBox
-        height: root.font.pointSize * 7
+        visible: false
+        height: root.font.pointSize / 4
         width: parent.width / 2
         anchors.horizontalCenter: parent.horizontalCenter
 
@@ -453,6 +470,7 @@ Column {
 
     Item {
         id: login
+        visible: false
         height: root.font.pointSize * 3
         width: parent.width / 2
         anchors.horizontalCenter: parent.horizontalCenter
@@ -554,6 +572,7 @@ Column {
 
     SessionButton {
         id: sessionSelect
+        visible: false
         textConstantSession: textConstants.session
         loginButtonWidth: loginButton.background.width
     }
